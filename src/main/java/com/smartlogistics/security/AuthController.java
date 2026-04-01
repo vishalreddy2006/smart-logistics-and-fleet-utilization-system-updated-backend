@@ -48,9 +48,9 @@ public ResponseEntity<Map<String, String>> signup(@RequestBody SignupRequest req
     System.out.println("Signup API called");
 
     // ✅ FIXED VALIDATION (correct logical operators)
-    if (request.getEmail() == null || request.getEmail().isBlank()
-             request.getPhoneNumber() == null  request.getPhoneNumber().isBlank()
-             request.getPassword() == null  request.getPassword().isBlank()) {
+    if (request.getEmail() == null || request.getEmail().isBlank() ||
+             request.getPhoneNumber() == null ||  request.getPhoneNumber().isBlank() ||
+             request.getPassword() == null || request.getPassword().isBlank()) {
 
         System.out.println("Validation failed: missing fields");
 
