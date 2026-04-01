@@ -26,20 +26,42 @@ public class SecurityConfig {
         this.jwtFilter = jwtFilter;
     }
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-            .cors(Customizer.withDefaults())
-            .csrf(AbstractHttpConfigurer::disable)
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/**").permitAll()
-                .anyRequest().permitAll())
-            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+   @Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        return http.build();
-    }
+    http
+        // ✅ Enable CORS (uses your CorsConfig.java)
+        .cors(Customizer.withDefaults())
+
+        // ✅ Disable CSRF (for APIs)
+        .csrf(AbstractHttpConfigurer::disable)
+
+        // ✅ Stateless (JWT based)
+        .sessionManagement(session -> 
+            session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        )
+
+        // ✅ Authorization rules
+        .authorizeHttpRequests(auth -> auth
+
+            // 🔥 CRITICAL: allow preflight requests
+            .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+
+            // ✅ Public auth endpoints
+            .requestMatchers("/api/auth/**").permitAll()
+
+            // ✅ Allow all API (you can restrict later)
+            .requestMatchers("/api/**").permitAll()
+
+            // ✅ Everything else allowed (for now)
+            .anyRequest().permitAll()
+        )
+
+        // ✅ JWT filter
+        .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+
+    return http.build();
+}
 
     @Bean
     public PasswordEncoder passwordEncoder() {
