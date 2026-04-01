@@ -41,31 +41,54 @@ public class AuthController {
                 .body(Map.of("message", "Invalid username or password"));
     }
 
-    @PostMapping("/signup")
-    public ResponseEntity<Map<String, String>> signup(@RequestBody SignupRequest request) {
-        if (request.getEmail() == null || request.getEmail().isBlank()
-                || request.getPhoneNumber() == null || request.getPhoneNumber().isBlank()
-                || request.getPassword() == null || request.getPassword().isBlank()) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Email, phone number and password are required"));
-        }
+   @PostMapping("/signup")
+public ResponseEntity<Map<String, String>> signup(@RequestBody SignupRequest request) {
 
-        if (userRepository.existsByEmail(request.getEmail())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", "Email already exists"));
-        }
+    // ✅ DEBUG LOG (very important)
+    System.out.println("Signup API called");
 
-        if (userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", "Phone number already exists"));
-        }
+    // ✅ FIXED VALIDATION (correct logical operators)
+    if (request.getEmail() == null || request.getEmail().isBlank()
+             request.getPhoneNumber() == null  request.getPhoneNumber().isBlank()
+             request.getPassword() == null  request.getPassword().isBlank()) {
 
-        User user = new User();
-        user.setEmail(request.getEmail());
-        user.setPhoneNumber(request.getPhoneNumber());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        System.out.println("Validation failed: missing fields");
 
-        userRepository.save(user);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(Map.of("message", "User signup successful"));
+        return ResponseEntity.badRequest()
+                .body(Map.of("message", "Email, phone number and password are required"));
     }
+
+    // ✅ CHECK EMAIL EXISTS
+    if (userRepository.existsByEmail(request.getEmail())) {
+        System.out.println("Email already exists: " + request.getEmail());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("message", "Email already exists"));
+    }
+
+    // ✅ CHECK PHONE EXISTS
+    if (userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
+        System.out.println("Phone number already exists: " + request.getPhoneNumber());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("message", "Phone number already exists"));
+    }
+
+    // ✅ CREATE USER
+    User user = new User();
+    user.setEmail(request.getEmail());
+    user.setPhoneNumber(request.getPhoneNumber());
+    user.setPassword(passwordEncoder.encode(request.getPassword()));
+
+    // ✅ DEBUG BEFORE SAVE
+    System.out.println("Saving user: " + request.getEmail());
+
+    userRepository.save(user);
+
+    // ✅ SUCCESS RESPONSE
+    return ResponseEntity.status(HttpStatus.CREATED)
+            .body(Map.of("message", "User signup successful"));
+}
 
     public static class LoginRequest {
         private String email;
